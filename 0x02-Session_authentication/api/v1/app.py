@@ -11,6 +11,9 @@ import os
 
 from api.v1.auth.auth import Auth
 from api.v1.auth.basic_auth import BasicAuth
+from api.v1.auth.session_auth import SessionAuth
+from api.v1.auth.session_db_auth import SessionDBAuth
+from api.v1.auth.session_exp_auth import SessionExpAuth
 from api.v1.views import app_views
 
 
@@ -21,7 +24,13 @@ auth = None
 
 
 auth_type = getenv('AUTH_TYPE', 'default')
-if auth_type == "basic_auth":
+if auth_type == "session_auth":
+    auth = SessionAuth()
+elif auth_type == 'session_exp_auth':
+    auth = SessionExpAuth()
+elif auth_type == 'session_db_auth':
+    auth = SessionDBAuth()
+elif auth_type == "basic_auth":
     auth = BasicAuth()
 else:
     auth = Auth()
@@ -69,15 +78,18 @@ def handle_request():
         return
     excluded_paths = ['/api/v1/status/',
                       '/api/v1/unauthorized/',
-                      '/api/v1/forbidden/']
+                      '/api/v1/forbidden/',
+                      '/api/v1/auth_session/login/']
     if not auth.require_auth(request.path, excluded_paths):
         return
     auth_header = auth.authorization_header(request)
-    if auth_header is None:
+    session_cookie = auth.session_cookie(request)
+    if auth_header is None and session_cookie is None:
         abort(401)
     user = auth.current_user(request)
     if user is None:
         abort(403)
+    request.current_user = user
 
 
 if __name__ == "__main__":
