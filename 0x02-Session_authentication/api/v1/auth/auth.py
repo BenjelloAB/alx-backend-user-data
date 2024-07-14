@@ -2,7 +2,6 @@
 """
 Module for authentication
 """
-import os
 from typing import List, TypeVar
 
 from flask import request
@@ -15,6 +14,14 @@ class Auth():
     def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
         """This function takes a path and a list of excluded paths as arguments
         and returns a boolean value.
+
+        Args:
+            path (str): The path to check against the list of excluded paths
+            excluded_paths (List[str]): The list of excluded paths
+
+        Returns:
+            bool: True if the path is not in the excluded paths list
+            False otherwise
         """
         if not path:
             return True
@@ -31,20 +38,19 @@ class Auth():
 
     def authorization_header(self, request=None) -> str:
         """Gets the value of the Authorization header from the request
+
+        Args:
+            request (request, optional): Flask request obj
+
+        Returns:
+            str: The value of the Authorization header
         """
         if request is not None:
             return request.headers.get('Authorization', None)
         return None
 
     def current_user(self, request=None) -> TypeVar('User'):
-        """This function takes a request object as an optional argument
-        and how the request object is used will be determined later.
+        """Mehtod that takes a request object as an optional argument
+        and returns a value of type 'User'
         """
         return None
-
-    def session_cookie(self, request=None) -> str:
-        """Retrieves the session cookie from a request.
-        """
-        if request is not None:
-            cookie_name = os.getenv('SESSION_NAME')
-            return request.cookies.get(cookie_name)
